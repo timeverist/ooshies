@@ -2,6 +2,7 @@
 
 const LS_STATE = 'ooshie.state.v1';
 const LS_ROOM  = 'ooshie.room.v1';
+const LS_NAME  = 'ooshie.name.v1';
 const FB_VER   = '10.12.5';
 
 /* ---------------- state ---------------- */
@@ -296,6 +297,7 @@ function refreshExportDialog() {
 
 $('#exportBtn').addEventListener('click', () => {
   refreshExportDialog();
+  try { $('#exportName').value = localStorage.getItem(LS_NAME) || ''; } catch (_) {}
   $('#exportDlg').showModal();
 });
 $('#closeExport').addEventListener('click', () => $('#exportDlg').close());
@@ -308,8 +310,8 @@ const loadImage = src => new Promise((resolve, reject) => {
   img.src = src;
 });
 
-/* Draws a poster-style PNG: a header, then one block per chosen section. */
-async function buildExport(chosen) {
+/* Draws a poster-style image: a header, then one block per chosen section. */
+async function buildExport(chosen, who) {
   const S = 2;                       // render at 2x for a crisp image
   const W = 900, PAD = 36, COLS = 5;
   const TILE = (W - PAD * 2) / COLS; // 165.6
@@ -343,15 +345,22 @@ async function buildExport(chosen) {
   const font = (px, weight = '400') =>
     `${weight} ${px}px "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif`;
 
-  // header
+  // header — a supplied name becomes the headline, so whoever gets the image
+  // can see whose list it is at a glance.
   const collected = OOSHIES.filter(o => entry(o.id).have).length;
   ctx.fillStyle = '#ffc844';
   ctx.font = font(34, '800');
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('Ooshie Tracker', PAD, 58);
+  let heading = who || 'Ooshie Tracker';
+  while (ctx.measureText(heading).width > W - PAD * 2 - 200 && heading.length > 3) {
+    heading = heading.slice(0, -1);
+  }
+  if (heading !== (who || 'Ooshie Tracker')) heading = heading.slice(0, -1) + '…';
+  ctx.fillText(heading, PAD, 58);
   ctx.fillStyle = 'rgba(255,255,255,.75)';
   ctx.font = font(17);
-  ctx.fillText(`${collected} of ${OOSHIES.length} collected`, PAD, 86);
+  const sub = `${collected} of ${OOSHIES.length} collected`;
+  ctx.fillText(who ? `Ooshie Tracker · ${sub}` : sub, PAD, 86);
   ctx.textAlign = 'right';
   ctx.fillStyle = 'rgba(255,255,255,.45)';
   ctx.font = font(15);
@@ -434,7 +443,9 @@ $('#doExport').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Building…';
   try {
-    const canvas = await buildExport(chosen);
+    const who = $('#exportName').value.trim().replace(/\s+/g, ' ');
+    try { localStorage.setItem(LS_NAME, who); } catch (_) {}
+    const canvas = await buildExport(chosen, who);
     // JPEG over PNG — the poster is opaque, and this is the difference between
     // a ~400KB image that texts fine and a ~5MB one that some apps reject.
     let type = 'image/jpeg';
@@ -447,7 +458,8 @@ $('#doExport').addEventListener('click', async () => {
 
     const stamp = new Date().toISOString().slice(0, 10);
     const ext = type === 'image/jpeg' ? 'jpg' : 'png';
-    const file = `ooshies-${chosen.map(s => s.key).join('-')}-${stamp}.${ext}`;
+    const slug = who.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const file = `${slug ? slug + '-' : ''}ooshies-${chosen.map(s => s.key).join('-')}-${stamp}.${ext}`;
 
     // On a phone the share sheet is what you want (send it straight to someone,
     // or save to Photos). On desktop it's a clumsy detour, so download instead.

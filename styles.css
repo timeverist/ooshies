@@ -280,12 +280,16 @@ main{max-width:1180px;margin:0 auto;padding:14px}
 .dlg-note{margin:0 0 16px;font-size:.85rem;color:rgba(255,255,255,.72);line-height:1.45}
 .field{display:block;margin-bottom:16px}
 .field span{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.55);margin-bottom:6px}
+.field span i{font-style:normal;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.38)}
 .field input{
   width:100%;padding:11px 12px;border-radius:11px;
   border:1px solid rgba(255,255,255,.22);
   background:rgba(0,0,0,.24);color:#fff;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;
+  font-family:inherit;font-size:.9rem;
+  transition:border-color .15s,background .15s;
 }
+.field input::placeholder{color:rgba(255,255,255,.35)}
+.field input:focus{outline:none;border-color:rgba(255,200,68,.65);background:rgba(0,0,0,.3)}
 .checks{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
 .check{
   display:flex;align-items:center;gap:11px;
