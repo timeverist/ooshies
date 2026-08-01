@@ -35,7 +35,7 @@ body{
   border-bottom:1px solid rgba(255,255,255,.12);
   padding-top:env(safe-area-inset-top);
 }
-.topbar-inner{max-width:1180px;margin:0 auto;padding:10px 14px 0}
+.topbar-inner{max-width:1440px;margin:0 auto;padding:10px 14px 0}
 
 .title-row{display:flex;align-items:center;gap:10px}
 h1{
@@ -78,8 +78,24 @@ h1{
 .stat.sync[data-state="live"]{color:#8ff0b5;border-color:rgba(143,240,181,.4);background:rgba(143,240,181,.12)}
 .stat.sync[data-state="error"]{color:#ffb4a8;border-color:rgba(255,180,168,.4);background:rgba(255,180,168,.12)}
 
-/* ---------- search ---------- */
-.search{position:relative;margin-bottom:9px}
+/* ---------- search + sort ---------- */
+.tools{display:flex;gap:8px;margin-bottom:9px}
+.search{position:relative;flex:1;min-width:0}
+.sort{
+  flex:none;height:38px;
+  padding:0 28px 0 11px;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.09);
+  color:#fff;font-family:inherit;font-size:.82rem;font-weight:600;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' opacity='.65'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 5px center;
+  background-size:16px;
+}
+.sort:focus{outline:none;border-color:rgba(255,200,68,.65)}
+.sort option{background:#16267a;color:#fff}
 .search-icon{
   position:absolute;left:10px;top:50%;transform:translateY(-50%);
   width:16px;height:16px;fill:rgba(255,255,255,.5);pointer-events:none;
@@ -135,15 +151,30 @@ h1{
 }
 .filter.active .pill{background:rgba(10,18,64,.16)}
 
-/* ---------- grid ---------- */
-main{max-width:1180px;margin:0 auto;padding:14px}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
-  gap:10px;
-  align-items:start;
+/* Keeps all four filters on screen on 360px-wide phones. */
+@media(max-width:400px){
+  .filters{gap:4px}
+  .filter{padding:8px 6px;font-size:.72rem;gap:4px}
+  .pill{padding:1px 4px;font-size:.64rem;min-width:16px}
 }
-@media(min-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}}
+
+/* ---------- grid ---------- */
+main{max-width:1440px;margin:0 auto;padding:14px}
+/* Columns never exceed 10 (the layout of the printed checklist): the track
+   minimum is the larger of a comfortable tile and exactly 1/10 of the row,
+   so an 11th column can never fit, while narrow screens still drop to fewer. */
+.grid{
+  --gap:10px;
+  --tile:104px;
+  display:grid;
+  gap:var(--gap);
+  align-items:start;
+  grid-template-columns:repeat(
+    auto-fill,
+    minmax(max(var(--tile), calc((100% - 9 * var(--gap)) / 10)), 1fr)
+  );
+}
+@media(min-width:600px){.grid{--gap:14px;--tile:120px}}
 
 .card{
   position:relative;

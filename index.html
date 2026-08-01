@@ -35,11 +35,17 @@
       <span class="stat sync" id="syncStat" data-state="local">Local only</span>
     </div>
 
-    <div class="search">
-      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3Zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Z"/></svg>
-      <input id="search" type="search" inputmode="search" autocomplete="off"
-             placeholder="Search by name or movie" aria-label="Search ooshies">
-      <button id="clearSearch" class="clear-search" type="button" aria-label="Clear search" hidden>&times;</button>
+    <div class="tools">
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3Zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Z"/></svg>
+        <input id="search" type="search" inputmode="search" autocomplete="off"
+               placeholder="Search by name or movie" aria-label="Search ooshies">
+        <button id="clearSearch" class="clear-search" type="button" aria-label="Clear search" hidden>&times;</button>
+      </div>
+      <select id="sort" class="sort" aria-label="Sort order" title="Sort order">
+        <option value="checklist">Checklist</option>
+        <option value="az">A–Z</option>
+      </select>
     </div>
 
     <nav class="filters" id="filters" role="tablist" aria-label="Filter ooshies">

@@ -3,6 +3,7 @@
 const LS_STATE = 'ooshie.state.v1';
 const LS_ROOM  = 'ooshie.room.v1';
 const LS_NAME  = 'ooshie.name.v1';
+const LS_SORT  = 'ooshie.sort.v1';
 const FB_VER   = '10.12.5';
 
 /* ---------------- state ---------------- */
@@ -11,7 +12,9 @@ let OOSHIES = [];
 let state = {};              // id -> { have:boolean, dupes:number }
 let filter = 'all';
 let query = '';              // normalised search text
+let sortMode = 'checklist';  // 'checklist' (PDF order) | 'az'
 const haystack = new Map();  // id -> normalised "name + series"
+const cards = new Map();     // id -> card element
 let remote = null;           // { db, ref, update } once Firebase connects
 let applyingRemote = false;  // guard so remote echoes don't re-publish
 
@@ -93,9 +96,30 @@ function matches(id) {
   return true;
 }
 
+/* OOSHIES arrives in checklist order — the order the figures appear on the
+   printed sheet — so that mode is just the array as loaded. */
+function sortedOoshies() {
+  if (sortMode === 'az') {
+    return [...OOSHIES].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  }
+  return OOSHIES;
+}
+
+/* Reorders the existing cards rather than rebuilding them, so the artwork
+   isn't re-decoded on every change. */
+function applySort() {
+  const frag = document.createDocumentFragment();
+  for (const o of sortedOoshies()) {
+    const card = cards.get(o.id);
+    if (card) frag.appendChild(card);
+  }
+  grid.appendChild(frag);
+}
+
 function buildCards() {
   grid.innerHTML = '';
   haystack.clear();
+  cards.clear();
   for (const o of OOSHIES) {
     // brand is searchable but not shown, so "star wars" finds the Mandalorian
     // figures too, and "marvel" / "pixar" pull up a whole franchise.
@@ -116,8 +140,10 @@ function buildCards() {
         <span class="spare-label" data-spare>Add spare</span>
         <button type="button" data-act="plus" aria-label="One more spare ${o.name}">+</button>
       </span>`;
+    cards.set(o.id, card);
     grid.appendChild(card);
   }
+  applySort();
 }
 
 function paint() {
@@ -243,6 +269,13 @@ $('#clearSearch').addEventListener('click', () => {
   searchInput.focus();
 });
 
+const sortSelect = $('#sort');
+sortSelect.addEventListener('change', () => {
+  sortMode = sortSelect.value === 'az' ? 'az' : 'checklist';
+  try { localStorage.setItem(LS_SORT, sortMode); } catch (_) {}
+  applySort();
+});
+
 $('#resetBtn').addEventListener('click', () => {
   if (!confirm('Clear every tick and spare? This affects everyone sharing this list.')) return;
   state = {};
@@ -278,7 +311,7 @@ const SECTIONS = [
 ];
 
 function sectionItems(section) {
-  return OOSHIES.filter(o => section.pick(entry(o.id)));
+  return sortedOoshies().filter(o => section.pick(entry(o.id)));
 }
 
 function refreshExportDialog() {
@@ -574,6 +607,10 @@ async function connect() {
 
 async function boot() {
   state = loadLocal();
+  try {
+    if (localStorage.getItem(LS_SORT) === 'az') sortMode = 'az';
+  } catch (_) {}
+  sortSelect.value = sortMode;
   try {
     const res = await fetch('ooshies.json');
     OOSHIES = await res.json();
