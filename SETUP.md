@@ -7,23 +7,25 @@ The app works fine after Part 1 — it just saves separately on each phone until
 
 ## Part 1 — Put it on GitHub Pages (~5 minutes)
 
-A git repo is already initialised in this folder with everything committed, so you only need
-to create the remote and push.
+A git repo is already initialised in this folder with everything committed, and the remote is
+already set to `https://github.com/timeverist/ooshies.git`. You only need to create the repo on
+GitHub and push.
 
 1. Go to <https://github.com/new>.
-   - **Repository name:** `ooshies` (any name works — it becomes part of the URL)
+   - **Repository name:** `ooshies` (must match, or update the remote to suit)
    - **Public** (free GitHub Pages needs a public repo)
-   - Do **not** tick "Add a README" — the folder already has one.
+   - Do **not** tick "Add a README"/.gitignore/licence — the folder already has everything, and
+     an extra commit on the remote will make the first push conflict.
    - Click **Create repository**.
 
-2. Back in this folder, run these two commands (swap in your GitHub username):
+2. Back in this folder:
 
    ```bash
-   git remote add origin https://github.com/YOUR-USERNAME/ooshies.git
    git push -u origin main
    ```
 
-   Or open the folder in GitHub Desktop and hit **Publish repository** (untick "Keep this code private").
+   Or open the folder in GitHub Desktop and hit **Publish repository** (untick "Keep this code
+   private").
 
 3. In the repo on github.com: **Settings → Pages**
    - **Source:** Deploy from a branch
@@ -32,7 +34,7 @@ to create the remote and push.
 4. Wait about a minute, then open:
 
    ```
-   https://YOUR-USERNAME.github.io/ooshies/
+   https://timeverist.github.io/ooshies/
    ```
 
    On your phone, use the browser's **Share → Add to Home Screen** and it behaves like a real app.
