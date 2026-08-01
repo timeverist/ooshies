@@ -9,6 +9,8 @@ const FB_VER   = '10.12.5';
 let OOSHIES = [];
 let state = {};              // id -> { have:boolean, dupes:number }
 let filter = 'all';
+let query = '';              // normalised search text
+const haystack = new Map();  // id -> normalised "name + series"
 let remote = null;           // { db, ref, update } once Firebase connects
 let applyingRemote = false;  // guard so remote echoes don't re-publish
 
@@ -75,7 +77,14 @@ function setSync(text, mode) {
 
 const TICK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.5 5.5L20 7"/></svg>';
 
+/* Strip everything but letters and digits so "spiderman" finds Spider-Man,
+   "r2d2" finds R2-D2 and "hei hei" finds Hei Hei. */
+function searchKey(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+}
+
 function matches(id) {
+  if (query && !(haystack.get(id) || '').includes(query)) return false;
   const e = entry(id);
   if (filter === 'collected')  return e.have;
   if (filter === 'missing')    return !e.have;
@@ -85,7 +94,11 @@ function matches(id) {
 
 function buildCards() {
   grid.innerHTML = '';
+  haystack.clear();
   for (const o of OOSHIES) {
+    // brand is searchable but not shown, so "star wars" finds the Mandalorian
+    // figures too, and "marvel" / "pixar" pull up a whole franchise.
+    haystack.set(o.id, searchKey(`${o.name} ${o.movie} ${o.brand}`));
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.id = o.id;
@@ -140,7 +153,9 @@ function paint() {
 
   const empty = $('#emptyState');
   empty.hidden = shown > 0;
+  const term = $('#search').value.trim();
   empty.textContent =
+    query                   ? `No ooshies match “${term}”${filter === 'all' ? '' : ' in this filter'}.` :
     filter === 'collected'  ? "Nothing collected yet — tap an ooshie to mark it." :
     filter === 'missing'    ? "You've got the whole set. Amazing!" :
     filter === 'duplicates' ? "No spares yet. Tap + on a collected ooshie to log one." :
@@ -202,6 +217,29 @@ $('#filters').addEventListener('click', ev => {
     b.setAttribute('aria-selected', String(on));
   }
   paint();
+});
+
+const searchInput = $('#search');
+
+function runSearch() {
+  query = searchKey(searchInput.value);
+  $('#clearSearch').hidden = searchInput.value === '';
+  paint();
+}
+
+searchInput.addEventListener('input', runSearch);
+searchInput.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && searchInput.value) {
+    ev.stopPropagation();
+    searchInput.value = '';
+    runSearch();
+  }
+});
+
+$('#clearSearch').addEventListener('click', () => {
+  searchInput.value = '';
+  runSearch();
+  searchInput.focus();
 });
 
 $('#resetBtn').addEventListener('click', () => {
