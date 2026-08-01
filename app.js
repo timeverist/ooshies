@@ -4,6 +4,7 @@ const LS_STATE = 'ooshie.state.v1';
 const LS_ROOM  = 'ooshie.room.v1';
 const LS_NAME  = 'ooshie.name.v1';
 const LS_SORT  = 'ooshie.sort.v1';
+const LS_ZOOM  = 'ooshie.zoom.v1';
 const FB_VER   = '10.12.5';
 
 /* ---------------- state ---------------- */
@@ -13,6 +14,7 @@ let state = {};              // id -> { have:boolean, dupes:number }
 let filter = 'all';
 let query = '';              // normalised search text
 let sortMode = 'checklist';  // 'checklist' (PDF order) | 'az'
+let zoomCols = null;         // null = responsive; a number pins columns per row
 const haystack = new Map();  // id -> normalised "name + series"
 const cards = new Map();     // id -> card element
 let remote = null;           // { db, ref, update } once Firebase connects
@@ -267,6 +269,61 @@ $('#clearSearch').addEventListener('click', () => {
   searchInput.value = '';
   runSearch();
   searchInput.focus();
+});
+
+/* ---------------- zoom (items per row) ---------------- */
+
+const MIN_COLS = 2, MAX_COLS = 10, MIN_TILE = 56;
+
+/** How many columns the responsive grid is currently producing. Read from the
+    resolved track list rather than by measuring cards, so a filter that leaves
+    only one item on screen doesn't report a one-column grid. */
+function renderedCols() {
+  const tracks = getComputedStyle(grid).gridTemplateColumns;
+  if (!tracks || tracks === 'none') return MIN_COLS;
+  return tracks.split(/\s+/).filter(Boolean).length;
+}
+
+/** Upper bound that still leaves tiles big enough to make out. */
+function maxColsForWidth() {
+  const styles = getComputedStyle(grid);
+  const gap = parseFloat(styles.columnGap) || 10;
+  const w = grid.clientWidth;
+  return Math.max(MIN_COLS, Math.min(MAX_COLS, Math.floor((w + gap) / (MIN_TILE + gap))));
+}
+
+function applyZoom() {
+  const cap = maxColsForWidth();
+  if (zoomCols === null) {
+    grid.classList.remove('zoomed');
+    grid.style.removeProperty('--cols');
+  } else {
+    zoomCols = Math.max(MIN_COLS, Math.min(cap, zoomCols));
+    grid.style.setProperty('--cols', zoomCols);
+    grid.classList.add('zoomed');
+  }
+  const now = zoomCols === null ? renderedCols() : zoomCols;
+  $('#zoomIn').disabled  = now <= MIN_COLS;   // fewer per row = bigger
+  $('#zoomOut').disabled = now >= cap;
+}
+
+function stepZoom(delta) {
+  const cap = maxColsForWidth();
+  const from = zoomCols === null ? renderedCols() : zoomCols;
+  const next = Math.max(MIN_COLS, Math.min(cap, from + delta));
+  if (next === from && zoomCols !== null) return;
+  zoomCols = next;
+  try { localStorage.setItem(LS_ZOOM, String(zoomCols)); } catch (_) {}
+  applyZoom();
+}
+
+$('#zoomIn').addEventListener('click',  () => stepZoom(-1));
+$('#zoomOut').addEventListener('click', () => stepZoom(+1));
+
+let resizeTimer = null;
+addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(applyZoom, 150);
 });
 
 const sortSelect = $('#sort');
@@ -609,6 +666,8 @@ async function boot() {
   state = loadLocal();
   try {
     if (localStorage.getItem(LS_SORT) === 'az') sortMode = 'az';
+    const z = parseInt(localStorage.getItem(LS_ZOOM), 10);
+    if (z >= MIN_COLS && z <= MAX_COLS) zoomCols = z;
   } catch (_) {}
   sortSelect.value = sortMode;
   try {
@@ -621,6 +680,7 @@ async function boot() {
   }
   buildCards();
   paint();
+  applyZoom();
   connect();
 }
 

@@ -48,12 +48,23 @@
       </select>
     </div>
 
-    <nav class="filters" id="filters" role="tablist" aria-label="Filter ooshies">
+    <div class="filter-row">
+      <nav class="filters" id="filters" role="tablist" aria-label="Filter ooshies">
       <button class="filter active" data-filter="all" role="tab" aria-selected="true">All <span class="pill" id="cntAll">40</span></button>
       <button class="filter" data-filter="collected" role="tab" aria-selected="false">Collected <span class="pill" id="cntCollected">0</span></button>
       <button class="filter" data-filter="missing" role="tab" aria-selected="false">Missing <span class="pill" id="cntMissing">40</span></button>
-      <button class="filter" data-filter="duplicates" role="tab" aria-selected="false">Duplicates <span class="pill" id="cntDuplicates">0</span></button>
-    </nav>
+        <button class="filter" data-filter="duplicates" role="tab" aria-selected="false"><span class="lbl-long">Duplicates</span><span class="lbl-short">Dupes</span> <span class="pill" id="cntDuplicates">0</span></button>
+      </nav>
+
+      <div class="zoom" role="group" aria-label="Change size">
+        <button id="zoomOut" class="zoom-btn" type="button" aria-label="Show more per row (smaller)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3Zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11ZM7.5 9.5h6v2h-6v-2Z"/></svg>
+        </button>
+        <button id="zoomIn" class="zoom-btn" type="button" aria-label="Show fewer per row (bigger)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3Zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11ZM9.5 7.5h2v2h2v2h-2v2h-2v-2h-2v-2h2v-2Z"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
