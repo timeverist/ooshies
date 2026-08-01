@@ -1,0 +1,21 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$room": {
+        ".read": "$room.length >= 10",
+        ".write": "$room.length >= 10",
+        "items": {
+          "$id": {
+            ".validate": "newData.hasChildren(['h','d'])",
+            "h": { ".validate": "newData.isBoolean()" },
+            "d": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

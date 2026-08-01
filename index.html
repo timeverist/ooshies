@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#12277d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<title>Rosie's Ooshie Tracker</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="title-row">
+      <h1>Rosie's Ooshie Tracker</h1>
+      <button id="shareBtn" class="icon-btn" title="Share with family" aria-label="Share with family">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 .18 1.02L8.9 8.6a3 3 0 1 0 0 6.8l6.28 3.58A3 3 0 1 0 18 16a2.98 2.98 0 0 0-1.92.7L9.8 13.12a3.02 3.02 0 0 0 0-2.24L16.08 7.3A2.98 2.98 0 0 0 18 8Z"/></svg>
+      </button>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      <div class="progress-label"><strong id="collectedCount">0</strong><span>/ <span id="totalCount">40</span> collected</span></div>
+    </div>
+
+    <div class="stats" id="stats">
+      <span class="stat"><b id="statMissing">0</b> missing</span>
+      <span class="stat"><b id="statDupes">0</b> spares</span>
+      <span class="stat sync" id="syncStat" data-state="local">Local only</span>
+    </div>
+
+    <nav class="filters" id="filters" role="tablist" aria-label="Filter ooshies">
+      <button class="filter active" data-filter="all" role="tab" aria-selected="true">All <span class="pill" id="cntAll">40</span></button>
+      <button class="filter" data-filter="collected" role="tab" aria-selected="false">Collected <span class="pill" id="cntCollected">0</span></button>
+      <button class="filter" data-filter="missing" role="tab" aria-selected="false">Missing <span class="pill" id="cntMissing">40</span></button>
+      <button class="filter" data-filter="duplicates" role="tab" aria-selected="false">Duplicates <span class="pill" id="cntDuplicates">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="grid" class="grid" aria-live="polite"></div>
+  <p id="emptyState" class="empty" hidden></p>
+</main>
+
+<footer class="foot">
+  <button id="resetBtn" class="text-btn">Reset everything</button>
+  <p class="legal">Character images &copy; Disney, Disney/Pixar, MARVEL, &amp; &trade; Lucasfilm Ltd. Personal use only.</p>
+</footer>
+
+<!-- Share sheet -->
+<dialog id="shareDlg" class="dlg">
+  <h2>Share your collection</h2>
+  <p class="dlg-note" id="shareNote">Send this link to anyone you collect with. You'll both see the same list, updating live.</p>
+  <label class="field">
+    <span>Your shared link</span>
+    <input id="shareLink" type="text" readonly>
+  </label>
+  <div class="dlg-actions">
+    <button id="copyBtn" class="btn primary">Copy link</button>
+    <button id="closeShare" class="btn">Done</button>
+  </div>
+  <p class="dlg-fine">Collection code: <code id="roomCodeText"></code></p>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
