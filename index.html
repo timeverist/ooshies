@@ -46,15 +46,6 @@
         <option value="checklist">Checklist</option>
         <option value="az">A–Z</option>
       </select>
-    </div>
-
-    <div class="filter-row">
-      <nav class="filters" id="filters" role="tablist" aria-label="Filter ooshies">
-      <button class="filter active" data-filter="all" role="tab" aria-selected="true">All <span class="pill" id="cntAll">40</span></button>
-      <button class="filter" data-filter="collected" role="tab" aria-selected="false">Collected <span class="pill" id="cntCollected">0</span></button>
-      <button class="filter" data-filter="missing" role="tab" aria-selected="false">Missing <span class="pill" id="cntMissing">40</span></button>
-        <button class="filter" data-filter="duplicates" role="tab" aria-selected="false"><span class="lbl-long">Duplicates</span><span class="lbl-short">Dupes</span> <span class="pill" id="cntDuplicates">0</span></button>
-      </nav>
 
       <div class="zoom" role="group" aria-label="Change size">
         <button id="zoomOut" class="zoom-btn" type="button" aria-label="Show more per row (smaller)">
@@ -65,6 +56,13 @@
         </button>
       </div>
     </div>
+
+    <nav class="filters" id="filters" role="tablist" aria-label="Filter ooshies">
+      <button class="filter active" data-filter="all" role="tab" aria-selected="true">All <span class="pill" id="cntAll">40</span></button>
+      <button class="filter" data-filter="collected" role="tab" aria-selected="false">Collected <span class="pill" id="cntCollected">0</span></button>
+      <button class="filter" data-filter="missing" role="tab" aria-selected="false">Missing <span class="pill" id="cntMissing">40</span></button>
+        <button class="filter" data-filter="duplicates" role="tab" aria-selected="false">Duplicates <span class="pill" id="cntDuplicates">0</span></button>
+      </nav>
   </div>
 </header>
 

@@ -320,10 +320,16 @@ function stepZoom(delta) {
 $('#zoomIn').addEventListener('click',  () => stepZoom(-1));
 $('#zoomOut').addEventListener('click', () => stepZoom(+1));
 
+/* The search box shares its row with sort and zoom, so on a narrow phone the
+   full placeholder would just clip mid-word. */
+function fitPlaceholder() {
+  searchInput.placeholder = innerWidth < 520 ? 'Search' : 'Search by name or movie';
+}
+
 let resizeTimer = null;
 addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(applyZoom, 150);
+  resizeTimer = setTimeout(() => { applyZoom(); fitPlaceholder(); }, 150);
 });
 
 const sortSelect = $('#sort');
@@ -681,6 +687,7 @@ async function boot() {
   buildCards();
   paint();
   applyZoom();
+  fitPlaceholder();
   connect();
 }
 

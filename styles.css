@@ -83,7 +83,7 @@ h1{
 .search{position:relative;flex:1;min-width:0}
 .sort{
   flex:none;height:38px;
-  padding:0 28px 0 11px;
+  padding:0 24px 0 9px;
   border-radius:11px;
   border:1px solid rgba(255,255,255,.2);
   background:rgba(255,255,255,.09);
@@ -130,18 +130,10 @@ h1{
 }
 .clear-search:active{transform:translateY(-50%) scale(.9)}
 
-.filter-row{display:flex;align-items:center;gap:8px;padding-bottom:10px}
-
 .filters{
-  display:flex;gap:7px;overflow-x:auto;
-  flex:1;min-width:0;
+  display:flex;gap:7px;overflow-x:auto;padding-bottom:10px;
   scrollbar-width:none;-ms-overflow-style:none;
-  /* Fades the trailing chip instead of guillotining it against the zoom
-     buttons, so it reads as "scroll for more". */
-  mask-image:linear-gradient(to right,#000 calc(100% - 16px),transparent);
-  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 16px),transparent);
 }
-.lbl-short{display:none}
 .filters::-webkit-scrollbar{display:none}
 .filter{
   flex:none;display:inline-flex;align-items:center;gap:5px;
@@ -175,21 +167,12 @@ h1{
 .zoom-btn:active{transform:scale(.9)}
 .zoom-btn:disabled{opacity:.3;cursor:default}
 
-/* Phone widths: tighten the chips and shorten the longest label so all four
-   still sit beside the zoom buttons. */
-@media(max-width:480px){
+/* Keeps all four filters on screen on 360px-wide phones. */
+@media(max-width:400px){
   .filters{gap:4px}
   .filter{padding:8px 6px;font-size:.72rem;gap:4px}
   .pill{padding:1px 4px;font-size:.64rem;min-width:16px}
-  .lbl-long{display:none}
-  .lbl-short{display:inline}
-}
-/* Narrower still (iPhone SE / 13 mini / 14): squeeze the last few pixels so the
-   Duplicates chip stays beside the zoom buttons rather than scrolling off. */
-@media(max-width:400px){
-  .filter-row{gap:6px}
-  .filters{gap:3px}
-  .filter{padding:8px 5px}
+  .tools{gap:6px}
   .zoom{gap:3px}
   .zoom-btn{width:32px;height:32px}
 }
@@ -201,7 +184,8 @@ main{max-width:1440px;margin:0 auto;padding:14px}
    so an 11th column can never fit, while narrow screens still drop to fewer. */
 .grid{
   --gap:10px;
-  --tile:104px;
+  /* Sized so phones land on 4 across by default. */
+  --tile:74px;
   display:grid;
   gap:var(--gap);
   align-items:start;
@@ -313,6 +297,13 @@ main{max-width:1440px;margin:0 auto;padding:14px}
 }
 .spare button:active{transform:scale(.9)}
 .spare button:disabled{opacity:.3;cursor:default}
+/* At phone tile sizes there isn't room for "×2" beside both buttons — and the
+   pink badge already shows the count — so the buttons just share the width. */
+@media(max-width:599px){
+  .spare{gap:4px;justify-content:center}
+  .spare .spare-label{display:none}
+  .spare button{flex:1;min-width:0;max-width:36px}
+}
 .spare .spare-label{
   flex:1;min-width:0;text-align:center;
   font-size:.58rem;font-weight:700;
