@@ -286,7 +286,28 @@ main{max-width:1180px;margin:0 auto;padding:14px}
   background:rgba(0,0,0,.24);color:#fff;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;
 }
+.checks{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.check{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 13px;border-radius:12px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.07);
+  transition:border-color .15s,background .15s;
+}
+.check:has(input:checked){
+  border-color:rgba(255,200,68,.6);
+  background:rgba(255,200,68,.12);
+}
+.check input{
+  flex:none;width:20px;height:20px;margin:0;cursor:pointer;
+  accent-color:var(--gold);
+}
+.check-body{display:flex;align-items:baseline;gap:8px;min-width:0}
+.check-body b{font-size:.92rem;font-weight:700}
+.check-body em{font-style:normal;font-size:.75rem;color:rgba(255,255,255,.55)}
+
 .dlg-actions{display:flex;gap:9px}
+.btn:disabled{opacity:.4;cursor:default}
 .btn{
   flex:1;padding:11px;border-radius:12px;cursor:pointer;
   border:1px solid rgba(255,255,255,.24);

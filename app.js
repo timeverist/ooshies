@@ -1,4 +1,4 @@
-/* Rosie's Ooshie Tracker */
+/* Ooshie Tracker */
 
 const LS_STATE = 'ooshie.state.v1';
 const LS_ROOM  = 'ooshie.room.v1';
@@ -268,36 +268,220 @@ function roomCode() {
 
 const ROOM = roomCode();
 
-$('#shareBtn').addEventListener('click', async () => {
-  const url = location.origin + location.pathname + '?room=' + ROOM;
-  const configured = !!remote;
-  $('#shareNote').textContent = configured
-    ? "Send this link to anyone you collect with. You'll both see the same list, updating live."
-    : "Live sharing isn't switched on yet — see SETUP.md. For now this link only opens the app.";
-  $('#shareLink').value = url;
-  $('#roomCodeText').textContent = ROOM;
+/* ---------------- export as image ---------------- */
 
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "Rosie's Ooshie Tracker", url });
-      return;
-    } catch (_) { /* cancelled — fall through to the dialog */ }
+const SECTIONS = [
+  { key: 'missing',    label: 'Missing',    opt: '#optMissing',    pick: e => !e.have },
+  { key: 'duplicates', label: 'Duplicates', opt: '#optDuplicates', pick: e => e.dupes > 0 },
+  { key: 'collected',  label: 'Collected',  opt: '#optCollected',  pick: e => e.have }
+];
+
+function sectionItems(section) {
+  return OOSHIES.filter(o => section.pick(entry(o.id)));
+}
+
+function refreshExportDialog() {
+  let any = false;
+  for (const s of SECTIONS) {
+    const n = sectionItems(s).length;
+    $(s.opt + 'Count').textContent = n === 1 ? '1 ooshie' : `${n} ooshies`;
+    const box = $(s.opt);
+    box.disabled = n === 0;
+    if (n === 0) box.checked = false;
+    if (box.checked) any = true;
   }
-  $('#shareDlg').showModal();
+  $('#doExport').disabled = !any;
+  $('#exportHint').textContent = any ? '' : 'Pick at least one section.';
+}
+
+$('#exportBtn').addEventListener('click', () => {
+  refreshExportDialog();
+  $('#exportDlg').showModal();
+});
+$('#closeExport').addEventListener('click', () => $('#exportDlg').close());
+for (const s of SECTIONS) $(s.opt).addEventListener('change', refreshExportDialog);
+
+const loadImage = src => new Promise((resolve, reject) => {
+  const img = new Image();
+  img.onload = () => resolve(img);
+  img.onerror = () => reject(new Error('could not load ' + src));
+  img.src = src;
 });
 
-$('#copyBtn').addEventListener('click', async () => {
-  const input = $('#shareLink');
+/* Draws a poster-style PNG: a header, then one block per chosen section. */
+async function buildExport(chosen) {
+  const S = 2;                       // render at 2x for a crisp image
+  const W = 900, PAD = 36, COLS = 5;
+  const TILE = (W - PAD * 2) / COLS; // 165.6
+  const IMG = TILE - 22, CAP = 34;
+  const ROW = IMG + CAP;
+
+  // Measure first so the canvas is exactly tall enough.
+  let h = 132;
+  const blocks = chosen.map(s => {
+    const items = sectionItems(s);
+    const rows = Math.ceil(items.length / COLS);
+    const top = h;
+    h += 46 + rows * ROW + 14;
+    return { s, items, rows, top };
+  });
+  h += 34;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * S;
+  canvas.height = h * S;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(S, S);
+
+  const bg = ctx.createLinearGradient(0, 0, W * 0.35, h);
+  bg.addColorStop(0, '#0b1657');
+  bg.addColorStop(0.45, '#12277d');
+  bg.addColorStop(1, '#1a54c4');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, h);
+
+  const font = (px, weight = '400') =>
+    `${weight} ${px}px "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif`;
+
+  // header
+  const collected = OOSHIES.filter(o => entry(o.id).have).length;
+  ctx.fillStyle = '#ffc844';
+  ctx.font = font(34, '800');
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Ooshie Tracker', PAD, 58);
+  ctx.fillStyle = 'rgba(255,255,255,.75)';
+  ctx.font = font(17);
+  ctx.fillText(`${collected} of ${OOSHIES.length} collected`, PAD, 86);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  ctx.font = font(15);
+  ctx.fillText(new Date().toLocaleDateString(), W - PAD, 86);
+  ctx.textAlign = 'left';
+  ctx.strokeStyle = 'rgba(255,255,255,.16)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, 104); ctx.lineTo(W - PAD, 104); ctx.stroke();
+
+  for (const { s, items, top } of blocks) {
+    ctx.fillStyle = '#fff';
+    ctx.font = font(21, '700');
+    ctx.fillText(s.label, PAD, top + 28);
+    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    ctx.font = font(15);
+    ctx.fillText(`${items.length}`, PAD + ctx.measureText(s.label).width + 42, top + 28);
+
+    for (let i = 0; i < items.length; i++) {
+      const o = items[i];
+      const x = PAD + (i % COLS) * TILE;
+      const y = top + 46 + Math.floor(i / COLS) * ROW;
+
+      ctx.fillStyle = 'rgba(255,255,255,.07)';
+      ctx.beginPath();
+      ctx.roundRect(x + 4, y + 2, TILE - 8, ROW - 6, 12);
+      ctx.fill();
+
+      try {
+        const img = await loadImage(o.img);
+        // contain the artwork inside the tile's square
+        const box = IMG - 16;
+        const k = Math.min(box / img.width, box / img.height);
+        const w = img.width * k, hh = img.height * k;
+        ctx.drawImage(img, x + (TILE - w) / 2, y + 10 + (IMG - 20 - hh) / 2, w, hh);
+      } catch (_) { /* skip artwork, keep the label */ }
+
+      const e = entry(o.id);
+      if (e.dupes > 0) {
+        const t = '+' + e.dupes;
+        ctx.font = font(13, '800');
+        const tw = ctx.measureText(t).width;
+        ctx.fillStyle = '#ff5f8f';
+        ctx.beginPath();
+        ctx.roundRect(x + TILE - tw - 26, y + 8, tw + 16, 21, 11);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.fillText(t, x + TILE - tw - 18, y + 23);
+      }
+
+      ctx.fillStyle = 'rgba(255,255,255,.92)';
+      ctx.font = font(13, '600');
+      ctx.textAlign = 'center';
+      let name = o.name;
+      while (ctx.measureText(name).width > TILE - 14 && name.length > 4) {
+        name = name.slice(0, -1);
+      }
+      if (name !== o.name) name = name.slice(0, -1) + '…';
+      ctx.fillText(name, x + TILE / 2, y + IMG + 4);
+      ctx.fillStyle = 'rgba(255,255,255,.4)';
+      ctx.font = font(11);
+      let mv = o.movie.toUpperCase();
+      while (ctx.measureText(mv).width > TILE - 14 && mv.length > 4) mv = mv.slice(0, -1);
+      ctx.fillText(mv, x + TILE / 2, y + IMG + 20);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,.3)';
+  ctx.font = font(11);
+  ctx.fillText('© Disney · Disney/Pixar · MARVEL · & ™ Lucasfilm Ltd.', PAD, h - 16);
+
+  return canvas;
+}
+
+$('#doExport').addEventListener('click', async () => {
+  const chosen = SECTIONS.filter(s => $(s.opt).checked);
+  if (!chosen.length) return;
+
+  const btn = $('#doExport');
+  btn.disabled = true;
+  btn.textContent = 'Building…';
   try {
-    await navigator.clipboard.writeText(input.value);
-    toast('Link copied');
-  } catch (_) {
-    input.select();
-    toast('Press Ctrl+C to copy');
+    const canvas = await buildExport(chosen);
+    // JPEG over PNG — the poster is opaque, and this is the difference between
+    // a ~400KB image that texts fine and a ~5MB one that some apps reject.
+    let type = 'image/jpeg';
+    let blob = await new Promise(res => canvas.toBlob(res, type, 0.92));
+    if (!blob) {
+      type = 'image/png';
+      blob = await new Promise(res => canvas.toBlob(res, type));
+    }
+    if (!blob) throw new Error('canvas produced no image');
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    const ext = type === 'image/jpeg' ? 'jpg' : 'png';
+    const file = `ooshies-${chosen.map(s => s.key).join('-')}-${stamp}.${ext}`;
+
+    // On a phone the share sheet is what you want (send it straight to someone,
+    // or save to Photos). On desktop it's a clumsy detour, so download instead.
+    const asFile = new File([blob], file, { type });
+    const onPhone = matchMedia('(pointer: coarse)').matches;
+    if (onPhone && navigator.canShare && navigator.canShare({ files: [asFile] })) {
+      try {
+        await navigator.share({ files: [asFile], title: 'Ooshie Tracker' });
+        $('#exportDlg').close();
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;   // user backed out
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    $('#exportDlg').close();
+    toast('Image saved');
+  } catch (err) {
+    console.error('[ooshies] export failed', err);
+    toast("Couldn't build the image");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save image';
+    refreshExportDialog();
   }
 });
-
-$('#closeShare').addEventListener('click', () => $('#shareDlg').close());
 
 /* ---------------- firebase sync (optional) ---------------- */
 

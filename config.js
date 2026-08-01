@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------
-   Rosie's Ooshie Tracker — sharing setup
+   Ooshie Tracker — shared list setup
 
    The app works right now with NO changes: everything saves in the
    browser on the device you're using.

@@ -1,4 +1,4 @@
-# Rosie's Ooshie Tracker — setup
+# Ooshie Tracker — setup
 
 Two parts. **Part 1 puts the app online.** **Part 2 makes you and your wife share one live list.**
 The app works fine after Part 1 — it just saves separately on each phone until you do Part 2.
@@ -102,9 +102,18 @@ This uses Firebase Realtime Database. The free tier is far more than a 40-item c
 7. Open the site. The badge in the header should change from **This device only** to
    **Shared & live**.
 
-8. Tap the **share icon** (top right) and send the link to your wife. It contains your
-   collection code (`?room=...`). When she opens it, you're both on the same list and ticks
-   show up on the other phone within about a second.
+8. Pair the two devices. Pick a private code of **at least 10 characters** (letters and digits
+   only) and open this once on **each** phone:
+
+   ```
+   https://timeverist.github.io/ooshies/?room=YOURSECRETCODE
+   ```
+
+   The code is remembered from then on, so afterwards the plain URL works. Both devices are now
+   on the same list and ticks show up on the other phone within about a second.
+
+   Treat the code like a password — anyone who guesses it can see and edit your list. If you
+   skip this step, each device quietly generates its own code and keeps a separate list.
 
 ### Is it safe to have the Firebase key in a public repo?
 

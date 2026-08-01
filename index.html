@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
-<title>Rosie's Ooshie Tracker</title>
+<title>Ooshie Tracker</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,9 +18,9 @@
 <header class="topbar">
   <div class="topbar-inner">
     <div class="title-row">
-      <h1>Rosie's Ooshie Tracker</h1>
-      <button id="shareBtn" class="icon-btn" title="Share with family" aria-label="Share with family">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 .18 1.02L8.9 8.6a3 3 0 1 0 0 6.8l6.28 3.58A3 3 0 1 0 18 16a2.98 2.98 0 0 0-1.92.7L9.8 13.12a3.02 3.02 0 0 0 0-2.24L16.08 7.3A2.98 2.98 0 0 0 18 8Z"/></svg>
+      <h1>Ooshie Tracker</h1>
+      <button id="exportBtn" class="icon-btn" title="Export as image" aria-label="Export as image">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3 1.4 1.42-5 5a1 1 0 0 1-1.4 0l-5-5 1.4-1.42 3.3 3.3V4a1 1 0 0 1 1-1ZM4 18h16v2H4v-2Z"/></svg>
       </button>
     </div>
 
@@ -61,19 +61,31 @@
   <p class="legal">Character images &copy; Disney, Disney/Pixar, MARVEL, &amp; &trade; Lucasfilm Ltd. Personal use only.</p>
 </footer>
 
-<!-- Share sheet -->
-<dialog id="shareDlg" class="dlg">
-  <h2>Share your collection</h2>
-  <p class="dlg-note" id="shareNote">Send this link to anyone you collect with. You'll both see the same list, updating live.</p>
-  <label class="field">
-    <span>Your shared link</span>
-    <input id="shareLink" type="text" readonly>
-  </label>
-  <div class="dlg-actions">
-    <button id="copyBtn" class="btn primary">Copy link</button>
-    <button id="closeShare" class="btn">Done</button>
+<!-- Export sheet -->
+<dialog id="exportDlg" class="dlg">
+  <h2>Export as image</h2>
+  <p class="dlg-note">Saves a picture you can text to someone — handy at the shops or for swapping spares.</p>
+
+  <div class="checks">
+    <label class="check">
+      <input type="checkbox" id="optMissing" checked>
+      <span class="check-body"><b>Missing</b><em id="optMissingCount"></em></span>
+    </label>
+    <label class="check">
+      <input type="checkbox" id="optDuplicates" checked>
+      <span class="check-body"><b>Duplicates</b><em id="optDuplicatesCount"></em></span>
+    </label>
+    <label class="check">
+      <input type="checkbox" id="optCollected">
+      <span class="check-body"><b>Collected</b><em id="optCollectedCount"></em></span>
+    </label>
   </div>
-  <p class="dlg-fine">Collection code: <code id="roomCodeText"></code></p>
+
+  <div class="dlg-actions">
+    <button id="doExport" class="btn primary">Save image</button>
+    <button id="closeExport" class="btn">Cancel</button>
+  </div>
+  <p class="dlg-fine" id="exportHint"></p>
 </dialog>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>

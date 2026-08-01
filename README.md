@@ -1,4 +1,4 @@
-# Rosie's Ooshie Tracker
+# Ooshie Tracker
 
 A phone-friendly checklist for the **Disney Ooshies 2026** set (40 figures).
 Tap an ooshie to mark it collected, log spares you can trade, and filter by
